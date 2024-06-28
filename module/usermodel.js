@@ -5,6 +5,8 @@ const userSchema = new mongoose.Schema({
   name: String,
   email: String,
   passoutYear: Number,
+  image: { type: Buffer },
+  imageType: String,
   password: String,
 });
 

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Profile </title>
+</head>
+<body>
+    <div> 
+        <h1 class="p-4 m-2 text-3xl text-red-300">UpDate Profile </h1>
+        <form action="/updataUserDb"  method="post" enctype="multipart/form-data" class"flex-col justify-center item-center "   >
+            <input class="px-2 py-1 m-2 bg-none border-2 border-red-100   outline-none  " disabled  type="text" value=<%= username %> name="username"  />
+            <input  class="px-2 py-1 m-2 bg-none border-2 border-red-100 outline-none " type="test" value=<%= name %> name="name"/>
+            <input  class="px-2 py-1 m-2 bg-none border-2 border-red-100 outline-none " type="number" value=<%= passoutYear %> name="passoutYear"/>
+           <br> <label for="pic"> profile pic</label> <br>
+            <input type="file" id="pic" name="file"> <br>
+             <input class=" rounded-full  font-semibold  px-3 py-1 bg-blue-500" type="submit"  />
+
+        </form>
+         
+    </div>
+    
+</body>
+</html>
