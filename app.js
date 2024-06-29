@@ -2,12 +2,14 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const mongoose = require("mongoose");
+const sharp = require("sharp");
 const cookieParser = require("cookie-parser");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const userModel = require("./module/usermodel");
 const faculty = require("./module/Faculty");
 const placementData = require("./module/placementData");
+const multer = require("multer");
 const port = process.env.PORT || 8000;
 
 mongoose.connect(
@@ -30,6 +32,11 @@ app.use((req, res, next) => {
   );
   next();
 });
+
+// Set up memory storage
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
 app.get("/test", (req, res) => {
   res.status(200).json("this is the data send from the backend .");
 });
@@ -70,9 +77,8 @@ app.post("/register", async (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  if (req.cookies.token == " " || req.cookies.token == undefined)
-    res.render("login");
-  else res.redirect("/pro");
+  if (req.cookies.token == undefined) res.render("login");
+  else res.redirect("/profile");
 });
 app.post("/verify", async (req, res) => {
   const { username, password } = req.body;
@@ -83,31 +89,55 @@ app.post("/verify", async (req, res) => {
         let token = jwt.sign({ username, email: user.email }, "shccccccccccc");
         res.cookie("token", token, { httpOnly: true, expiresIn: "1h" });
 
-        res.redirect("/pro");
+        res.redirect("/profile");
       } else res.send(" the password is wrong ..");
     });
   } else res.send("some thing wend worng");
 });
 
 app.get("/logout", (req, res) => {
-  res.cookie("token", " ");
+  res.clearCookie("token");
   res.redirect("/login");
 });
 
-app.get("/pro", isLogIn, (req, res) => {
-  res.render("profile", req.user);
+app.get("/profile", isLogIn, async (req, res) => {
+  let data = await userModel
+    .findOne({ username: req.user.username })
+    .select("-password -_id -__v ");
+  // res.json(proData);
+  //const base64Image = data.image.toString("base64"); use this for conveting the buffer data into image
+  // in the image tag , {src = 'data: data.imageType : base64, base64Image'}
+  // res.render("profile", { data, image: base64Image });
+  res.json(data);
+});
+
+app.get("/updatePro", isLogIn, async (req, res) => {
+  const data = await userModel
+    .findOne({ username: req.user.username })
+    .select("-password -_id -__v");
+  res.render("updatePro", data);
+});
+app.post("/updataUserDb", isLogIn, upload.single("file"), async (req, res) => {
+  console.log(req.file.buffer);
+  const { name, passoutYear } = req.body;
+  const user = await userModel.findOneAndUpdate(
+    { username: req.user.username },
+    { name, passoutYear },
+  );
+  user.image = req.file.buffer;
+  user.imageType = req.file.mimetype;
+  await user.save();
+  res.redirect("/profile");
 });
 
 function isLogIn(req, res, next) {
-  console.log(req.user);
-  if (req.cookies["token"] == " " || req.cookies.token == undefined)
-    res.redirect("/login");
+  if (req.cookies.token === undefined) res.redirect("/login");
   else {
-    jwt.verify(req.cookies["token"], "shccccccccccc", function (err, decoded) {
+    jwt.verify(req.cookies.token, "shccccccccccc", function (err, decoded) {
       req.user = decoded;
     });
+    next();
   }
-  next();
 }
 
 app.listen(port, () => console.log("server is running"));
