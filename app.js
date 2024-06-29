@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const mongoose = require("mongoose");
+const sharp = require("sharp");
 const cookieParser = require("cookie-parser");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -100,12 +101,16 @@ app.get("/logout", (req, res) => {
 });
 
 app.get("/profile", isLogIn, async (req, res) => {
-  let proData = await userModel
+  let data = await userModel
     .findOne({ username: req.user.username })
-    .select("-password -_id -__v");
+    .select("-password -_id -__v ");
   // res.json(proData);
-  res.render("profile", proData);
+  //const base64Image = data.image.toString("base64"); use this for conveting the buffer data into image
+  // in the image tag , {src = 'data: data.imageType : base64, base64Image'}
+  // res.render("profile", { data, image: base64Image });
+  res.json(data);
 });
+
 app.get("/updatePro", isLogIn, async (req, res) => {
   const data = await userModel
     .findOne({ username: req.user.username })
